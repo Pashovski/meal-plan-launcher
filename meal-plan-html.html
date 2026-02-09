@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meal Plan Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: #ffffff;
+            color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #4a7c59;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #3a6b48;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px 10px;
+            transition: color 0.3s ease;
+            position: absolute;
+            left: 20px;
+        }
+
+        .back-btn:hover {
+            color: #e0e0e0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .meal-plan {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .plan-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #000000;
+            text-align: center;
+        }
+
+        .meals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .meal-card {
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .meal-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #000000;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #4a7c59;
+            color: #ffffff;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3a6b48;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #cccccc;
+            color: #000000;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .total-row {
+            background: #f0f0f0;
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .total-row td {
+            padding: 10px;
+            border-top: 2px solid #cccccc;
+        }
+
+        .daily-totals {
+            background: #f9f9f9;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .daily-totals h3 {
+            color: #000000;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .total-item {
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .total-item-label {
+            color: #666666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .total-item-value {
+            color: #4a7c59;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .format-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .format-btn {
+            background: #333333;
+            color: #e0e0e0;
+            border: 1px solid #3a3a3a;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .format-btn.active {
+            background: #0066cc;
+            border-color: #0066cc;
+            color: #ffffff;
+        }
+
+        .format-btn:hover {
+            border-color: #4a4a4a;
+            background: #3a3a3a;
+        }
+
+        .format-btn.active:hover {
+            background: #0052a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="navigate('home')">←</button>
+            <h1 id="page-title">Meal Plan</h1>
+        </div>
+
+        <div class="content">
+            <div class="meal-plan" id="mealPlanContainer">
+                <!-- Meal plan content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mealPlanData = {
+            pasha: {
+                title: "Pasha's Meal Plan",
+                dailyTotals: {
+                    calories: 2190.95,
+                    carbs: 300.5,
+                    fat: 39.4,
+                    protein: 158.7
+                },
+                goals: {
+                    calories: 2200,
+                    carbs: 255,
+                    fat: 60,
+                    protein: 160
+                },
+                meals: [
+                    {
+                        name: "Meal 1 - Breakfast",
+                        items: [
+                            { name: "Nasoya Super Firm Tofu", amount: "90g", calories: 130, carbs: 2, fat: 7, protein: 14 },
+                            { name: "Sweet Potato", amount: "150g", calories: 129, carbs: 39, fat: 0.2, protein: 2.4 },
+                            { name: "MSF Original Sausage Patties", amount: "1 patty", calories: 70, carbs: 3, fat: 3, protein: 9 },
+                            { name: "Salsa", amount: "1/2 c", calories: 40, carbs: 8, fat: 0, protein: 2 }
+                        ]
+                    },
+                    {
+                        name: "Meal 2 - Post Workout",
+                        items: [
+                            { name: "Owyn Protein Shake", amount: "1 bottle", calories: 200, carbs: 6, fat: 6, protein: 32 },
+                            { name: "Banana", amount: "1 large (130g)", calories: 120, carbs: 30, fat: 0, protein: 0 }
+                        ]
+                    },
+                    {
+                        name: "Meal 3 - Lunch",
+                        items: [
+                            { name: "Cabbage", amount: "70g", calories: 18, carbs: 4.1, fat: 0.1, protein: 0.9 },
+                            { name: "Mushrooms", amount: "70g", calories: 22, carbs: 2.9, fat: 0.2, protein: 2 },
+                            { name: "Broccoli", amount: "90g", calories: 39, carbs: 6.3, fat: 0.3, protein: 2.6 },
+                            { name: "Carrots", amount: "60g", calories: 25, carbs: 5.7, fat: 0.1, protein: 0.6 },
+                            { name: "Western Family Frozen Vegetable Mix", amount: "1c", calories: 20, carbs: 4, fat: 0, protein: 1 },
+                            { name: "General Tso's Spicy & Sweet Sauce", amount: "4 Tbsp", calories: 70, carbs: 16, fat: 0, protein: 1 },
+                            { name: "Daring Chicken", amount: "3 oz", calories: 108, carbs: 6, fat: 2.5, protein: 16.8 },
+                            { name: "Rice, cooked", amount: "80g", calories: 105, carbs: 23, fat: 0.2, protein: 2.5 }
+                        ]
+                    },
+                    {
+                        name: "Meal 4 - Snack",
+                        items: [
+                            { name: "Kiwi", amount: "2 kiwis", calories: 84, carbs: 22, fat: 0, protein: 2 }
+                        ]
+                    },
+                    {
+                        name: "Meal 5 - Dinner",
+                        items: [
+                            { name: "Lazy Girl Protein Pancakes", amount: "2 serv", calories: 500, carbs: 62, fat: 6, protein: 52 },
+                            { name: "Enjoy Life Mini Choc Chips", amount: "1 Tbsp", calories: 80, carbs: 9, fat: 5, protein: 1 },
+                            { name: "Mixed Berries", amount: "1/2 c", calories: 35, carbs: 8.5, fat: 0.3, protein: 0.5 },
+                            { name: "Walden Farm Syrup", amount: "to taste", calories: 0, carbs: 0, fat: 0, protein: 0 }
+                        ]
+                    },
+                    {
+                        name: "Meal 6 - Dessert",
+                        items: [
+                            { name: "Trail Mix Bar", amount: "1 bar", calories: 310, carbs: 43, fat: 8.5, protein: 16.4 }
+                        ]
+                    }
+                ]
+            },
+            caitlin: {
+                title: "Caitlin's Meal Plan",
+                dailyTotals: {
+                    calories: 1486,
+                    carbs: 184,
+                    fat: 40,
+                    protein: 101
+                },
+                goals: {
+                    calories: 1480,
+                    carbs: 190,
+                    fat: 40,
+                    protein: 90
+                },
+                meals: [
+                    {
+                        name: "Breakfast - Tofu Scramble",
+                        items: [
+                            { name: "Nasoya Organic Extra Firm Tofu", amount: "90g", calories: 65, carbs: 0.9, fat: 3.5, protein: 7 },
+                            { name: "Sweet Potato", amount: "150g", calories: 129, carbs: 39, fat: 0.2, protein: 2.4 },
+                            { name: "Morningstar Farms Breakfast Sausage", amount: "38g", calories: 112, carbs: 3, fat: 3, protein: 9 },
+                            { name: "Salsa", amount: "120g", calories: 23, carbs: 1.1, fat: 0.1, protein: 2.6 }
+                        ]
+                    },
+                    {
+                        name: "Lunch - Stir Fry Bowl",
+                        items: [
+                            { name: "Red Cabbage", amount: "70g", calories: 16, carbs: 3.7, fat: 0.1, protein: 0.9 },
+                            { name: "Sliced Mushrooms", amount: "70g", calories: 22, carbs: 2.9, fat: 0.2, protein: 2 },
+                            { name: "Broccoli Florets", amount: "90g", calories: 39, carbs: 6.3, fat: 0.3, protein: 2.6 },
+                            { name: "Carrots", amount: "60g", calories: 25, carbs: 5.7, fat: 0.1, protein: 0.6 },
+                            { name: "Fajita Vegetable Blend", amount: "150g", calories: 45, carbs: 10, fat: 0.2, protein: 2 },
+                            { name: "General Tso's Sauce", amount: "30g", calories: 63, carbs: 14, fat: 0, protein: 0.5 },
+                            { name: "Daring Original Plant Chicken", amount: "165g", calories: 198, carbs: 0, fat: 3, protein: 38 },
+                            { name: "White Rice, cooked", amount: "75g", calories: 83, carbs: 18.4, fat: 0.2, protein: 1.8 }
+                        ]
+                    },
+                    {
+                        name: "Lunch - PBJ Sandwich",
+                        items: [
+                            { name: "Jiff Crunchy Peanut Butter", amount: "41g", calories: 244, carbs: 11, fat: 19, protein: 8 },
+                            { name: "Trader Joe's Strawberry Preserves", amount: "30g", calories: 42, carbs: 12, fat: 0, protein: 0 },
+                            { name: "Nature's Own Whole Grain Bread", amount: "52g", calories: 140, carbs: 24, fat: 3, protein: 8 }
+                        ]
+                    },
+                    {
+                        name: "Snack - Ninja Creami Ice Cream",
+                        items: [
+                            { name: "Nasoya Silken Tofu", amount: "142g", calories: 79, carbs: 1, fat: 4.5, protein: 9 },
+                            { name: "Unsweetened Almond Milk", amount: "140g", calories: 14, carbs: 0.5, fat: 1, protein: 0.5 },
+                            { name: "Soy Protein Isolate", amount: "12g", calories: 48, carbs: 1, fat: 0, protein: 11 },
+                            { name: "Monk Fruit Extract", amount: "2.5g", calories: 0, carbs: 0, fat: 0, protein: 0 },
+                            { name: "Vanilla Bean Powder", amount: "2.5g", calories: 9, carbs: 2, fat: 0, protein: 0 },
+                            { name: "Xanthan Gum", amount: "2.5g", calories: 9, carbs: 2, fat: 0, protein: 0 }
+                        ]
+                    },
+                    {
+                        name: "Snack - Chocolate Syrup",
+                        items: [
+                            { name: "Hershey's Simply Chocolate Syrup", amount: "40g", calories: 95, carbs: 25, fat: 0, protein: 0 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function renderMealPlan(personKey) {
+            const data = mealPlanData[personKey];
+            const container = document.getElementById('mealPlanContainer');
+            document.getElementById('page-title').textContent = data.title;
+
+            let html = `<div class="plan-title">${data.title}</div>`;
+
+            // Daily totals section
+            html += `
+                <div class="daily-totals">
+                    <h3>Daily Totals vs Goals</h3>
+                    <div class="totals-grid">
+                        <div class="total-item">
+                            <div class="total-item-label">Calories</div>
+                            <div class="total-item-value">${Math.round(data.dailyTotals.calories)}</div>
+                            <div class="total-item-label">Goal: ${Math.round(data.goals.calories)}</div>
+                        </div>
+                        <div class="total-item">
+                            <div class="total-item-label">Protein (g)</div>
+                            <div class="total-item-value">${Math.round(data.dailyTotals.protein)}</div>
+                            <div class="total-item-label">Goal: ${Math.round(data.goals.protein)}</div>
+                        </div>
+                        <div class="total-item">
+                            <div class="total-item-label">Carbs (g)</div>
+                            <div class="total-item-value">${Math.round(data.dailyTotals.carbs)}</div>
+                            <div class="total-item-label">Goal: ${Math.round(data.goals.carbs)}</div>
+                        </div>
+                        <div class="total-item">
+                            <div class="total-item-label">Fat (g)</div>
+                            <div class="total-item-value">${Math.round(data.dailyTotals.fat)}</div>
+                            <div class="total-item-label">Goal: ${Math.round(data.goals.fat)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Meals
+            html += '<div class="meals-container">';
+            data.meals.forEach(meal => {
+                let mealCalories = 0, mealCarbs = 0, mealFat = 0, mealProtein = 0;
+
+                meal.items.forEach(item => {
+                    mealCalories += item.calories;
+                    mealCarbs += item.carbs;
+                    mealFat += item.fat;
+                    mealProtein += item.protein;
+                });
+
+                html += `
+                    <div class="meal-card">
+                        <div class="meal-name">${meal.name}</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Amount</th>
+                                    <th>Calories</th>
+                                    <th>Carbs</th>
+                                    <th>Fat</th>
+                                    <th>Protein</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                meal.items.forEach(item => {
+                    html += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${item.amount}</td>
+                            <td>${item.calories}</td>
+                            <td>${item.carbs}</td>
+                            <td>${item.fat}</td>
+                            <td>${item.protein}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                                <tr class="total-row">
+                                    <td colspan="2"><strong>Meal Total</strong></td>
+                                    <td><strong>${Math.round(mealCalories)}</strong></td>
+                                    <td><strong>${Math.round(mealCarbs * 10) / 10}</strong></td>
+                                    <td><strong>${Math.round(mealFat * 10) / 10}</strong></td>
+                                    <td><strong>${Math.round(mealProtein * 10) / 10}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function navigate(pageId) {
+            document.querySelectorAll(".section").forEach(section => {
+                section.classList.remove("active");
+            });
+            document.getElementById(pageId).classList.add("active");
+        }
+
+        // Get person from URL parameter
+        const params = new URLSearchParams(window.location.search);
+        const personKey = params.get('person') || 'pasha';
+
+        // Initialize with the requested meal plan
+        renderMealPlan(personKey);
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') renderMealPlan('pasha');
+            if (e.key === '2') renderMealPlan('caitlin');
+        });
+    </script>
+</body>
+</html>

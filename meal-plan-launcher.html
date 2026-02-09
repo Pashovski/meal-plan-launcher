@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pasha D Meal Plan</title>
+    <link rel="icon" href="favicon.png" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        background: #1e1e1e;
+        color: #e0e0e0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+
+      /* Header */
+      .header {
+        background: #2a2a2a;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #3a3a3a;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      /* Navigation and Container */
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .content {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Section visibility */
+      .section {
+        display: none;
+        height: 100%;
+      }
+
+      .section.active {
+        display: flex;
+      }
+
+      /* Home Page */
+      #home {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      .card {
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        padding: 20px 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .card:hover {
+        background: #333333;
+        border-color: #4a4a4a;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .card h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #ffffff;
+      }
+
+      .card p {
+        font-size: 12px;
+        color: #a0a0a0;
+      }
+
+      /* PDF Viewer Page */
+      #pdf-viewer {
+        flex-direction: column;
+      }
+
+      #pdf-viewer .header {
+        border-bottom: 1px solid #3a3a3a;
+      }
+
+      #pdf-viewer .header h1 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      #pdf-viewer .content {
+        overflow: auto;
+      }
+
+      #html-meal-plan {
+        flex-direction: column;
+      }
+
+      #html-meal-plan .content {
+        overflow: auto;
+      }
+
+      .back-btn {
+        background: none;
+        border: none;
+        color: #e0e0e0;
+        cursor: pointer;
+        font-size: 20px;
+        padding: 5px 10px;
+        margin-right: 10px;
+        transition: color 0.3s ease;
+      }
+
+      .back-btn:hover {
+        color: #ffffff;
+      }
+
+      .pdf-container {
+        flex: 1;
+        overflow: auto;
+      }
+
+      embed {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* Contact Info Page */
+      #contact {
+        flex-direction: column;
+      }
+
+      #contact .header {
+        border-bottom: 1px solid #3a3a3a;
+      }
+
+      .contact-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      .contact-info {
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+      }
+
+      .contact-info h2 {
+        font-size: 24px;
+        margin-bottom: 30px;
+        color: #ffffff;
+      }
+
+      .contact-item {
+        margin-bottom: 20px;
+      }
+
+      .contact-item label {
+        display: block;
+        font-size: 12px;
+        color: #a0a0a0;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+
+      .contact-item p {
+        font-size: 16px;
+        color: #e0e0e0;
+      }
+
+      /* Home Page Title */
+      #home .home-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 40px;
+      }
+
+      /* Footer */
+      #home .footer {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 12px;
+        color: #a0a0a0;
+        white-space: nowrap;
+      }
+
+      #home .footer:hover {
+        color: #e0e0e0;
+      }
+
+      .footer-info-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .footer-date {
+        color: #a0a0a0;
+        font-size: 12px;
+        border-left: 1px solid #3a3a3a;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- Home Page -->
+      <div id="home" class="section active">
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px;">
+          <div class="home-title">Pasha D Meal Plan</div>
+          <div class="cards-container">
+            <div class="card" onclick="viewPdf('latest_meal_plan_january_2026.pdf', 'Pasha\'s Meal Plan')">
+              <h2>📋 Pasha's Meal Plan (PDF)</h2>
+              <p>View original PDF</p>
+            </div>
+            <div class="card" onclick="viewHtmlMealPlan('pasha', 'Pasha\'s Meal Plan')">
+              <h2>📊 Pasha's Meal Plan (HTML)</h2>
+              <p>View formatted meal plan</p>
+            </div>
+            <div class="card" onclick="viewPdf('Caitlin Sample Meal Plan 8 - deficit.pdf', 'Caitlin\'s Meal Plan')">
+              <h2>🍽️ Caitlin's Meal Plan (PDF)</h2>
+              <p>View original PDF</p>
+            </div>
+            <div class="card" onclick="viewHtmlMealPlan('caitlin', 'Caitlin\'s Meal Plan')">
+              <h2>📊 Caitlin's Meal Plan (HTML)</h2>
+              <p>View formatted meal plan</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer" onclick="navigate('contact')">
+          <div class="footer-info-group">
+            <span>bigdaddylongstrokes@hotmail.com</span>
+            <span>•</span>
+            <span>(718) 420-6969</span>
+            <span>•</span>
+            <span>DÜrsk, Slobovia</span>
+          </div>
+          <div class="footer-date" id="footer-date"></div>
+        </div>
+      </div>
+
+      <!-- PDF Viewer Page -->
+      <div id="pdf-viewer" class="section">
+        <div class="header">
+          <h1>
+            <button class="back-btn" onclick="navigate('home')">←</button>
+            <span id="pdf-title">Meal Plan</span>
+          </h1>
+        </div>
+        <div class="content pdf-container">
+          <embed id="pdf-embed" src="latest_meal_plan_january_2026.pdf" type="application/pdf" />
+        </div>
+      </div>
+
+      <!-- HTML Meal Plan Page -->
+      <div id="html-meal-plan" class="section">
+        <div class="header">
+          <h1>
+            <button class="back-btn" onclick="navigate('home')">←</button>
+            <span id="html-meal-title">Meal Plan</span>
+          </h1>
+        </div>
+        <div class="content pdf-container" style="padding: 0;">
+          <iframe id="meal-plan-iframe" style="border: none; width: 100%; height: 100%;" src=""></iframe>
+        </div>
+      </div>
+
+      <!-- Contact Info Page -->
+      <div id="contact" class="section">
+        <div class="header">
+          <h1>
+            <button class="back-btn" onclick="navigate('home')">←</button>
+            Contact Info
+          </h1>
+        </div>
+        <div class="content contact-content">
+          <div class="contact-info">
+            <h2>Get in Touch</h2>
+            <div class="contact-item">
+              <label>Email</label>
+              <p>bigdaddylongstrokes@hotmail.com</p>
+            </div>
+            <div class="contact-item">
+              <label>Phone</label>
+              <p>(718) 420-6969</p>
+            </div>
+            <div class="contact-item">
+              <label>Location</label>
+              <p>DÜrsk, Slobovia</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showPage(pageId) {
+        document.querySelectorAll(".section").forEach(section => {
+          section.classList.remove("active");
+        });
+        document.getElementById(pageId).classList.add("active");
+      }
+
+      function navigate(pageId) {
+        showPage(pageId);
+        window.history.pushState({ pageId }, "", "#" + pageId);
+      }
+
+      function viewPdf(filename, title) {
+        document.getElementById("pdf-embed").src = filename;
+        document.getElementById("pdf-title").textContent = title;
+        window.history.pushState({ pageId: "pdf-viewer", filename, title }, "", "#pdf-viewer");
+        showPage("pdf-viewer");
+      }
+
+      function viewHtmlMealPlan(personKey, title) {
+        document.getElementById("html-meal-title").textContent = title;
+        const urlParam = `?person=${personKey}`;
+        document.getElementById("meal-plan-iframe").src = `meal-plan-html.html${urlParam}`;
+        window.history.pushState({ pageId: "html-meal-plan", personKey, title }, "", "#html-meal-plan");
+        showPage("html-meal-plan");
+      }
+
+      window.addEventListener("popstate", (e) => {
+        if (e.state?.pageId) {
+          if (e.state.pageId === "pdf-viewer" && e.state.filename) {
+            document.getElementById("pdf-embed").src = e.state.filename;
+            document.getElementById("pdf-title").textContent = e.state.title;
+          } else if (e.state.pageId === "html-meal-plan" && e.state.personKey) {
+            document.getElementById("html-meal-title").textContent = e.state.title;
+            document.getElementById("meal-plan-iframe").src = `meal-plan-html.html?person=${e.state.personKey}`;
+          }
+          showPage(e.state.pageId);
+        }
+      });
+
+      // Initialize home page in history
+      window.history.replaceState({ pageId: "home" }, "", "#home");
+
+      // Set today's date in footer
+      const today = new Date();
+      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      const dateStr = today.toLocaleDateString('en-US', options);
+      document.getElementById('footer-date').textContent = dateStr;
+    </script>
+  </body>
+</html>
